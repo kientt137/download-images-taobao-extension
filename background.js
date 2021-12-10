@@ -22,20 +22,27 @@ chrome.runtime.onMessage.addListener(
 				let image_record
 				let img_array=[]
 				while (image_record = re.exec(html)) {
-					console.warn(image_record[1])
 					img_array.push(image_record[1])
 				}
 				download_image("taobao", img_array)
 			} else if (full_url.includes("1688.com")){
 				let result = []
-				// find all product image
+				/** find all product image */
 				let re = new RegExp('class="tab-trigger.+?original.+?(https.+?)&quot', 'gi')
 				let image_record
 				let img_array=[]
 				while (image_record = re.exec(html)) {
-					console.log(image_record)
-					console.warn(image_record[1])
 					img_array.push(image_record[1])
+				}
+				/** find all image on description */
+				let re_des = new RegExp('id="de-description-detail">.+?class="price-explain"', 'gis')
+				// find DOM description
+				let html_description = re_des.exec(html)
+				if (html_description.length > 0) {
+					let re_img_des = new RegExp('\/\/([^"]+?jpg)', 'gi')
+					while (image_record = re_img_des.exec(html_description[0])) {
+						img_array.push(image_record[1])
+					}
 				}
 				download_image("1688", img_array)
 			}
