@@ -16,7 +16,11 @@ chrome.runtime.onMessage.addListener(
         if (message.img_array) {
             for (let i = 0; i < message.img_array.length; i++) {
                 let elem = document.createElement("img");
-                elem.src = message.img_array[i]
+                let img_url = message.img_array[i]
+                if (!img_url.includes("https://")) {
+                    img_url = "https://" + img_url
+                }
+                elem.src = img_url
                 document.getElementById("list-photos").appendChild(elem)
             }
             downloadImg.disable = false
@@ -41,7 +45,7 @@ function download_image(outputFolder, img_array) {
 	for (i in img_array){
 		let img_url = img_array[i]
 		if (!img_url.includes("https://")) {
-			img_url = "https:" + img_url
+			img_url = "https://" + img_url
 		}
 		chrome.downloads.download({
 			url: img_url,
