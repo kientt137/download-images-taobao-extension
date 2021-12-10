@@ -1,5 +1,6 @@
 chrome.runtime.onMessage.addListener(
     function(html, sender, sendResponse) {
+		console.log("this is background.js")
         chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
             let full_url = tabs[0].url.toString()
 			if (full_url.includes("shopee.vn")) {
@@ -7,7 +8,6 @@ chrome.runtime.onMessage.addListener(
 				let raw_name = arr[arr.length - 1].split('.')[0]
 				let raw_name_encode = decodeURI(raw_name)
 				let folder = decodeURI(raw_name_encode)
-				let result = []
 				let re = new RegExp('background-image.+?(https.+?)&quot;', 'gi')
 				let image_record
 				let img_array=[]
@@ -15,18 +15,22 @@ chrome.runtime.onMessage.addListener(
 					let img_url=image_record[1].split("_")[0]
 					img_array.push(img_url)
 				}
-				download_image(folder, img_array)
+				chrome.runtime.sendMessage({
+					img_array: img_array,
+					folder: "shopee_" + folder
+				})
 			} else if (full_url.includes("taobao.com")){
-				let result = []
 				let re = new RegExp('id="J_TbViewerThumb-.+?src="(.+?\.jpg)', 'gi')
 				let image_record
 				let img_array=[]
 				while (image_record = re.exec(html)) {
 					img_array.push(image_record[1])
 				}
-				download_image("taobao", img_array)
+				chrome.runtime.sendMessage({
+					img_array: img_array,
+					folder: "taobao"
+				})
 			} else if (full_url.includes("1688.com")){
-				let result = []
 				/** find all product image */
 				let re = new RegExp('class="tab-trigger.+?original.+?(https.+?)&quot', 'gi')
 				let image_record
@@ -44,33 +48,13 @@ chrome.runtime.onMessage.addListener(
 						img_array.push(image_record[1])
 					}
 				}
-				download_image("1688", img_array)
+				chrome.runtime.sendMessage({
+					img_array: img_array,
+					folder: "1688.com"
+				})
 			}
         })
     })
 
-function download_image(outputFolder, img_array) {
-	let currentdate = new Date()
-	let datetime = currentdate.getDate() + "_"
-		+ (currentdate.getMonth()+1) + "_"
-		+ currentdate.getFullYear() + "-"
-		+ currentdate.getHours() + "_"
-		+ currentdate.getMinutes() + "_"
-		+ currentdate.getSeconds()
-	outputFolder += "_" + datetime
-	let count = 1
-	let i
-	for (i in img_array){
-		let img_url = img_array[i]
-		if (!img_url.includes("https://")) {
-			img_url = "https:" + img_url
-		}
-		chrome.downloads.download({
-			url: img_url,
-			filename: outputFolder + '/' + "image_" + count + ".jpeg"
-		})
-		count++
-	}
-}
 
 function sendResponse(){}

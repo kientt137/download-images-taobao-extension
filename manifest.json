@@ -9,9 +9,9 @@
   "permissions": ["storage", "activeTab", "scripting",  "downloads"],
   "host_permissions": [
     "https://shopee.vn/*",
-	"https://item.taobao.com/*",
-	"https://detail.1688.com/*",
-	"https://detail.tmall.com/*"
+    "https://item.taobao.com/*",
+    "https://detail.1688.com/*",
+    "https://detail.tmall.com/*"
   ],
   "action": {
     "default_popup": "popup.html",
