@@ -13,20 +13,33 @@ async function loadHtml() {
 }
 chrome.runtime.onMessage.addListener(
     function(message, sender, sendResponse) {
-        if (message.img_array) {
-            for (let i = 0; i < message.img_array.length; i++) {
-                let elem = document.createElement("img");
-                let img_url = message.img_array[i]
-                if (!img_url.includes("https://")) {
-                    img_url = "https://" + img_url
+        if (message.img_array && message.img_array.length > 0) {
+            let img_count = video_count = 0
+            let img_array = message.img_array
+            for (let i = 0; i < img_array.length; i++) {
+                let url = img_array[i]
+                if (!url.includes("https://")) {
+                    url = "https://" + url
                 }
-                elem.src = img_url
-                document.getElementById("list-photos").appendChild(elem)
+                if (url.includes(".mp4")) {
+                    video_count++
+                    let elem = document.createElement("video");
+                    elem.src = url
+                    elem.autoplay = true
+                    elem.muted = true
+                    document.getElementById("list-photos").appendChild(elem)
+                }
+                else {
+                    img_count++
+                    let elem = document.createElement("img");
+                    elem.src = url
+                    document.getElementById("list-photos").appendChild(elem)
+                }
             }
             downloadImg.disable = false
-            downloadImg.innerText = "Download " + message.img_array.length + " images"
+            downloadImg.innerText = "Download " + img_count + " image(s) and " + video_count + " video(s)" 
             downloadImg.addEventListener("click", () => {
-                download_image(message.folder, message.img_array)
+                download_image(message.folder, img_array)
             });
         }
     });
@@ -47,10 +60,17 @@ function download_image(outputFolder, img_array) {
 		if (!img_url.includes("https://")) {
 			img_url = "https://" + img_url
 		}
-		chrome.downloads.download({
-			url: img_url,
-			filename: outputFolder + '/' + "image_" + count + ".jpeg"
-		})
+        if (img_url.includes(".mp4")) {
+            chrome.downloads.download({
+                url: img_url,
+                filename: outputFolder + '/' + "video_" + count + ".mp4"
+            })
+        } else {
+            chrome.downloads.download({
+                url: img_url,
+                filename: outputFolder + '/' + "image_" + count + ".jpeg"
+            })
+        }
 		count++
 	}
 }
